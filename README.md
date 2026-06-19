@@ -154,20 +154,7 @@ The pipeline is seeded by one or more **base motion** `.npz` files. Each holds G
 trajectories with keys such as `base_xyz_quat (T,7)`, `joint_pos (T,29)`,
 `obj_xyz_quat (T,7)`; batched files have a leading `(n_batch, T, …)` axis.
 
-The `motions/` directory is **git-ignored** — supply your own:
-
-```bash
-# A. Convert a CSV motion to npz
-MUJOCO_GL=egl uv run src/mjlab/scripts/csv_to_npz.py \
-  --input-file /path/to/motion.csv --output-name motion_name \
-  --input-fps 30 --output-fps 50 --render
-
-# B. Download a dataset from a WandB motion registry
-uv run python src/mjlab/scripts/diffusion_planner/download_motions_from_wandb.py \
-  --entity <your-org> --project <project-name>
-```
-
-Place the result where your config points, e.g.
+Place your motion files where your config points, e.g.
 `motions/output/pure_kick/_merged_batched_pure_kick.npz`.
 
 ---
