@@ -80,18 +80,8 @@ The repository is organized around two components:
 ```bash
 git clone https://github.com/Atarilab/mjlab.git
 cd mjlab
-
-# Single-GPU / workstation development:
 git checkout user/kanish/FolM
-
-# Multi-GPU + ready-made SLURM batch scripts (cluster):
-# git checkout user/kanish/FolM_Cluster
 ```
-
-| Branch | Use |
-|--------|-----|
-| `user/kanish/FolM` | Main pipeline, single device (`--device cuda:0`). |
-| `user/kanish/FolM_Cluster` | Adds `--num_gpus` (1–4) for distributed policy training + cluster batch scripts. |
 
 ### 2. Clone the diffusion planner *into* mjlab
 
@@ -255,55 +245,14 @@ RL policy checkpoints land under `logs/rsl_rl/<experiment_name>/<run>/model_*.pt
 
 ---
 
-## Running on a SLURM Cluster
+## Training a Policy Directly
 
-Batch scripts live in [`mjlab/cluster/`](mjlab/cluster/). Submit with `sbatch`,
-monitor with `squeue -u $USER`, tail logs with `tail -f logs/slurm/<jobid>.out`,
-cancel with `scancel <jobid>`.
-
-### Full pipeline (multi-GPU, LXP/Meluxina) — `cluster/evo_pipeline_lxp.sh`
-
-The `FolM_Cluster` branch requests 4× A100, resolves the GPU count, and passes
-`--num_gpus`:
+To train a tracking policy on a motion without the evolutionary loop:
 
 ```bash
-#SBATCH --partition=gpu --qos=default
-#SBATCH --gpus-per-task=4 --cpus-per-task=32 --time=8:00:00
-cd /project/home/<acct>/mjlab
-export PATH="$HOME/.local/bin:$PATH"
-export MUJOCO_GL=egl
-export WANDB_API_KEY=<key>
-# ...resolves NUM_GPUS from CUDA_VISIBLE_DEVICES / SLURM_GPUS_*...
-uv run python src/mjlab/scripts/FoLM/run_evolutionary_pipeline.py \
-  --config   src/mjlab/scripts/FoLM/pipeline_config.yaml \
-  --base_motion motions/output/pure_kick/_merged_batched_pure_kick.npz \
-  --out_dir  results/evo_..._pure_kick \
-  --num_gpus "$NUM_GPUS"
-```
-
-Edit `--account`, `--mail-user`, the `cd` path, `WANDB_API_KEY`, `--base_motion`,
-and `--out_dir` before submitting:
-
-```bash
-cd ~/mjlab && mkdir -p logs/slurm
-sbatch cluster/evo_pipeline_lxp.sh
-```
-
-> `--num_gpus` exists only on `FolM_Cluster`. On `FolM`, drop it and use `--device cuda:0`.
-
-### Plain RL policy training — `cluster/vgg_cluster.sh` / `vgg_cluster_multi_gpu.sh`
-
-```bash
-# Single GPU
 MUJOCO_GL=egl uv run train Mjlab-Tracking-Flat-Unitree-G1-Box-No-State-Estimation \
   --motion-file motions/output/motion.npz \
   --env.scene.num_envs 4096 --agent.max-iterations 30000 --device cuda:0
-
-# Multi-GPU (2 GPUs via torchrun)
-MUJOCO_GL=egl uv run torchrun --nproc_per_node=2 --no_python \
-  train Mjlab-Tracking-Flat-Unitree-G1-Box-No-State-Estimation \
-  --distributed True --motion-file motions/output/motion.npz \
-  --env.scene.num_envs 8192 --agent.max-iterations 30000
 ```
 
 ### Sanity-checking a task before training
@@ -341,24 +290,15 @@ uv run python plot_trajectory_npz.py --npz_path results/inference_mg.npz
 
 The planner outputs world-frame trajectories of shape `(B, T, 43)` (pelvis
 xyz+quat + 29 joints + object xyz+quat). See the planner's `README.md`,
-`CLAUDE.md`, and `docs/01_data_processing.md … 05_cluster_usage_karolina.md` for
-the 51-dim ego-centric feature layout, SBTO transform, style conditioning, and
-hierarchical two-phase generation.
-
-**On Karolina (IT4I):**
-```bash
-cd ~/diffusion_planner
-sbatch train_karolina.sh
-EPOCH=500 sbatch inference_karolina.sh
-EPOCH=500 STYLE=push sbatch batch_goal_sweep_karolina.sh
-```
+`CLAUDE.md`, and the `docs/` folder for the 51-dim ego-centric feature layout,
+SBTO transform, style conditioning, and hierarchical two-phase generation.
 
 ---
 
 ## Quick-Start Checklist
 
 1. Install `uv`; have an NVIDIA GPU (CUDA 12.4+).
-2. `git clone mjlab` → `git checkout user/kanish/FolM` (or `FolM_Cluster`).
+2. `git clone mjlab` → `git checkout user/kanish/FolM`.
 3. `git clone diffusion-planner` into `src/mjlab/scripts/diffusion_planner/` (**underscore!**).
 4. `uv sync`; verify `uv run list_envs`.
 5. `wandb login` / set `WANDB_API_KEY` + `WANDB_ENTITY`.
@@ -377,9 +317,7 @@ EPOCH=500 STYLE=push sbatch batch_goal_sweep_karolina.sh
 | OpenGL / EGL / rendering errors on a server | Prefix commands with `MUJOCO_GL=egl`. |
 | Out-of-memory during training | Lower `--num_envs` (8192 → 4096 → 2048) and/or `--diff_chunk_size`. |
 | Previous results disappeared | Expected — `--out_dir` is `rmtree`'d at start. Use a new path. |
-| `--num_gpus` unrecognized | You're on `FolM`; that flag is only on `FolM_Cluster`. Use `--device`. |
 | WandB prompts / fails | `export WANDB_API_KEY=...` and `WANDB_ENTITY=...`. |
-| SLURM logs missing | `mkdir -p logs/slurm` before `sbatch`. |
 
 ---
 
