@@ -219,6 +219,33 @@ Full schema: [`pipeline_config.py`](mjlab/src/mjlab/scripts/FoLM/pipeline_config
 `pick_place_relative_box_pose`, `pick_place_relative_box_pose_xyz`,
 `pick_place_relative_box_pose_6d`, `pick_place_handout_height`.
 
+### Elites and the fitness score (read this if you get no elites)
+
+Each candidate trajectory is rolled out in MuJoCo and scored by a **fitness
+function** (see `compute_batch_metrics` in
+[`utils/trajectory_utils.py`](mjlab/src/mjlab/scripts/FoLM/utils/trajectory_utils.py)).
+Fitness is the **product** of several exponential tracking-error terms — body
+position/velocity, root position/orientation, leg position, foot-contact
+percentage, and object Z-stability — and is forced to `0` for any rollout that
+hits a bad termination. A candidate becomes an **elite** only if its fitness
+exceeds `evolution.fitness_threshold` (default `5e-4`).
+
+> ⚠️ **If the first iteration finds zero elites, the fitness score is almost
+> certainly the problem — not the rest of the pipeline.** Common causes:
+> - `fitness_threshold` set too high for this motion → lower it (e.g. `1e-5`),
+>   confirm elites appear, then tighten back up.
+> - An inappropriate or overly strict term for the motion at hand. Because
+>   fitness is a *product*, a single near-zero term (e.g. object Z-stability on a
+>   motion with no object, or a tight `std` on a fast motion) collapses the whole
+>   score. Inspect the per-term values logged during the rollout.
+> - Rollouts terminating early (bad-termination mask zeroing fitness) — check the
+>   termination thresholds for the task.
+>
+> **The fitness terms and threshold are not universal — expect to retune them
+> when you switch to a different base motion or task.** Use a tiny run
+> (`--num_samples 50 --generations 1 --iterations 1`) to calibrate before
+> launching a full job.
+
 ### Output artifacts
 
 Inside `results/<out_dir>/`:
@@ -314,6 +341,7 @@ SBTO transform, style conditioning, and hierarchical two-phase generation.
 | Symptom | Fix |
 |---|---|
 | `ModuleNotFoundError: mjlab.scripts.diffusion_planner` | Directory is named with a hyphen — rename to `diffusion_planner`; ensure `__init__.py` files exist. |
+| No elites in the first iteration | The fitness score is too strict for this motion — lower `--fitness_threshold` and/or fix an inappropriate fitness term. See [Elites and the fitness score](#elites-and-the-fitness-score-read-this-if-you-get-no-elites). Expect to retune per motion. |
 | OpenGL / EGL / rendering errors on a server | Prefix commands with `MUJOCO_GL=egl`. |
 | Out-of-memory during training | Lower `--num_envs` (8192 → 4096 → 2048) and/or `--diff_chunk_size`. |
 | Previous results disappeared | Expected — `--out_dir` is `rmtree`'d at start. Use a new path. |
