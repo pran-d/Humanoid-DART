@@ -4,9 +4,9 @@
 
 ### **Humanoid** Loco-Manipulation using **D**iffusion-guided **A**ugmentation through **R**elabeling and **T**racking
 
-*IEEE-RAS International Conference on Humanoid Robots (Humanoids), 2026*
+*IEEE Robotics and Automation Letters (RA-L), 2026*
 
-<!-- [📄 Paper](#) · [🌐 Project Page](#) · [🎥 Video](#) -->
+[📄 Paper](https://arxiv.org/abs/2606.26855) · [🌐 Project Page](https://pran-d.github.io/Humanoid-DART/) · [🎥 Video](https://www.youtube.com/watch?v=ORAL3zjS2O0)
 
 </div>
 
@@ -354,12 +354,13 @@ SBTO transform, style conditioning, and hierarchical two-phase generation.
 If you find Humanoid-DART useful, please cite:
 
 ```bibtex
-@inproceedings{humanoiddart2026,
-  title     = {Humanoid-DART: Humanoid Loco-Manipulation using Diffusion-guided
-               Augmentation through Relabeling and Tracking},
-  author    = {Anonymous Author(s)},
-  booktitle = {IEEE-RAS International Conference on Humanoid Robots (Humanoids)},
-  year      = {2026}
+@article{thiagarajan2026humanoiddart,
+  title   = {Humanoid-DART: Humanoid Loco-Manipulation using Diffusion-guided
+             Augmentation through Relabeling and Tracking},
+  author  = {Thiagarajan, Kanish and Debbad, Pranav and Dh{\'e}din, Victor and
+             Omar, Shafeef and Khadiv, Majid},
+  journal = {IEEE Robotics and Automation Letters},
+  year    = {2026}
 }
 ```
 
