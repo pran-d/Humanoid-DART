@@ -72,7 +72,6 @@ figcaption { color: var(--muted); font-size: .92rem; margin-top: 8px; }
 .cols h3 { margin-top: 20px; color: var(--accent); }
 .cols p { margin: 0; }
 .clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; margin-top: 22px; align-items: start; }
 
 .tablewrap { overflow-x: auto; margin-top: 22px; }
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
@@ -192,16 +191,6 @@ footer { border-top: 1px solid var(--rule); padding: 26px 0 40px; color: var(--m
       <img src="assets/ablations.jpg" width="1500" height="393" alt="Left and centre: frontier sampling discovers more new bins per iteration than uniform sampling. Right: goal relabeling gives the lowest commanded-to-achieved error" loading="lazy">
       <figcaption>Frontier goal sampling fills 28&ndash;74% more new bins per iteration than uniform sampling (left, centre). Relabeling by the achieved goal gives the best-conditioned generator (right).</figcaption>
     </figure>
-    <div class="pair">
-      <figure>
-        <img src="assets/cross_attention.jpg" width="1500" height="606" alt="Cross-attention heatmaps with and without structured partial unmasking" loading="lazy">
-        <figcaption>Structured partial unmasking makes body-pose tokens attend to the object pose.</figcaption>
-      </figure>
-      <figure>
-        <img src="assets/obstacle.jpg" width="1500" height="1125" alt="Robot root paths curving around an obstacle towards the goal region" loading="lazy">
-        <figcaption>Beyond planar goals: adding object mass (3-D) or an obstacle position (4-D) to the task space reaches 85.8% and 90.5% coverage.</figcaption>
-      </figure>
-    </div>
   </section>
 
   <section class="wrap narrow" id="bibtex">
