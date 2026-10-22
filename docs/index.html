@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Humanoid-DART bootstraps goal-conditioned humanoid loco-manipulation from as few as four demonstrations, alternating a diffusion motion generator with an RL tracker and relabeling rollouts by the goal they reached.">
+<meta property="og:title" content="Humanoid-DART">
+<meta property="og:description" content="Humanoid-DART bootstraps goal-conditioned humanoid loco-manipulation from as few as four demonstrations, alternating a diffusion motion generator with an RL tracker and relabeling rollouts by the goal they reached.">
+<meta property="og:image" content="https://pran-d.github.io/Humanoid-DART/assets/teaser.jpg">
+<meta property="og:url" content="https://pran-d.github.io/Humanoid-DART/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E">
+<title>Humanoid-DART</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Humanoid-DART project page. Palette drawn from the pipeline figure: deep slate ink,
+   a plasma-violet accent (the coverage colormap's early bins) and a warm paper ground. */
+:root {
+  --bg: #faf9f6; --panel: #ffffff; --ink: #1c2130; --muted: #5b6272; --rule: #e1ded6;
+  --accent: #5b2a86; --accent-ink: #ffffff; --ours: #f3ecf9; --code-bg: #f1efe9;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #14161c; --panel: #1b1e26; --ink: #e9e7e1; --muted: #a3a9b6; --rule: #2e333e;
+          --accent: #c9a2f0; --accent-ink: #1a1026; --ours: #2a2236; --code-bg: #1f232c; } }
+:root[data-theme="dark"] { --bg: #14161c; --panel: #1b1e26; --ink: #e9e7e1; --muted: #a3a9b6; --rule: #2e333e;
+          --accent: #c9a2f0; --accent-ink: #1a1026; --ours: #2a2236; --code-bg: #1f232c; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--ink);
+       font: 400 17px/1.6 "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif; }
+img, video, iframe { max-width: 100%; display: block; }
+.wrap { width: min(1080px, 100% - 40px); margin-inline: auto; }
+.wrap.narrow { width: min(760px, 100% - 40px); }
+h1, h2, h3 { font-family: "Source Serif 4", Georgia, serif; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.4rem, 6vw, 3.6rem); font-weight: 600; letter-spacing: -0.01em; }
+h2 { font-size: 1.7rem; font-weight: 600; margin-bottom: 14px; }
+h3 { font-size: 1.15rem; font-weight: 600; margin: 34px 0 10px; }
+section { padding: 34px 0; }
+section + section { border-top: 1px solid var(--rule); }
+
+.hero { text-align: center; padding: 64px 0 26px; }
+.subtitle { font-size: 1.2rem; color: var(--muted); max-width: 44ch; margin: 12px auto 22px; text-wrap: balance; }
+.subtitle u { text-decoration-color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.authors { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 22px; margin: 0; font-weight: 500; }
+.affil { color: var(--muted); margin: 6px 0 4px; font-size: .98rem; }
+.venue { color: var(--accent); font-weight: 600; margin: 0 0 24px; }
+.links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.btn { display: inline-block; padding: 9px 20px; border-radius: 999px; background: var(--ink); color: var(--bg);
+       text-decoration: none; font-weight: 600; font-size: .95rem; border: 1.5px solid var(--ink); }
+.btn small { font-weight: 400; opacity: .8; }
+.btn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn.ghost:hover { color: var(--accent-ink); }
+.btn[aria-disabled="true"] { opacity: .55; pointer-events: none; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+figure { margin: 0; }
+figure img, .clips video { border-radius: 8px; border: 1px solid var(--rule); background: var(--panel); width: 100%; }
+figcaption { color: var(--muted); font-size: .92rem; margin-top: 8px; }
+.teaser { padding-top: 10px; }
+.tldr { max-width: 70ch; margin: 22px auto 0; font-size: 1.08rem; }
+#abstract p { text-align: justify; hyphens: auto; }
+
+.video-embed { position: relative; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; border: 1px solid var(--rule); }
+.video-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px 32px; margin-top: 10px; }
+.cols h3 { margin-top: 20px; color: var(--accent); }
+.cols p { margin: 0; }
+.clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; margin-top: 22px; align-items: start; }
+
+.tablewrap { overflow-x: auto; margin-top: 22px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+caption { caption-side: top; text-align: left; color: var(--muted); font-size: .92rem; padding-bottom: 8px; }
+th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+tr.ours td { background: var(--ours); font-weight: 600; }
+
+.bib { position: relative; }
+pre { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; overflow-x: auto; margin: 0;
+      font: 400 .85rem/1.55 "JetBrains Mono", ui-monospace, Menlo, monospace; }
+#copy-bib { position: absolute; top: 10px; right: 10px; font: 600 .8rem "Source Sans 3", sans-serif; padding: 5px 12px;
+            border-radius: 6px; border: 1px solid var(--rule); background: var(--panel); color: var(--ink); cursor: pointer; }
+#copy-bib:hover { border-color: var(--accent); color: var(--accent); }
+
+footer a { color: inherit; }
+footer { border-top: 1px solid var(--rule); padding: 26px 0 40px; color: var(--muted); font-size: .9rem; text-align: center; }
+
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <h1>Humanoid-DART</h1>
+    <p class="subtitle"><u>Humanoid</u> Loco-Manipulation using <u>D</u>iffusion-guided <u>A</u>ugmentation through <u>R</u>elabeling and <u>T</u>racking</p>
+
+    <p class="authors">
+      <span>Kanish Thiagarajan</span>
+      <span>Pranav Debbad</span>
+      <span>Victor Dh&eacute;din</span>
+      <span>Shafeef Omar</span>
+      <span>Majid Khadiv</span>
+    </p>
+    <p class="affil">Munich Institute of Robotics and Machine Intelligence (MIRMI), Technical University of Munich</p>
+    <p class="venue">IEEE Robotics and Automation Letters (RA-L), 2026</p>
+
+    <nav class="links" aria-label="Paper resources">
+      <a class="btn" href="https://arxiv.org/abs/2606.26855">Paper</a>
+      <a class="btn" href="https://www.youtube.com/watch?v=ORAL3zjS2O0">Video</a>
+      <a class="btn" href="https://github.com/pran-d/Humanoid-DART">Code</a>
+      <a class="btn ghost" href="#bibtex">BibTeX</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap teaser">
+    <figure>
+      <img src="assets/teaser.jpg" alt="A Unitree G1 humanoid pushing, kicking and carrying a box in the lab" loading="eager">
+      <figcaption>Trajectories generated by Humanoid-DART, deployed on a Unitree G1: push, kick, and pick-and-place.</figcaption>
+    </figure>
+    <p class="tldr"><strong>From four demonstrations to a task space.</strong> Humanoid-DART alternates between a goal-conditioned diffusion generator that proposes new whole-body references and an RL tracker that validates them in physics. Successful rollouts are relabeled with the goal they actually reached and fed back, so the set of goals the robot can reach keeps growing, without collecting more data.</p>
+  </section>
+
+  <section class="wrap narrow" id="abstract">
+    <h2>Abstract</h2>
+    <p>Imitating human demonstrations has emerged as a dominant paradigm for learning humanoid loco-manipulation policies. However, scaling these approaches remains challenging due to the high cost of collecting diverse demonstrations and the need for continual human intervention to correct policy failures. We present a self-supervised framework that bootstraps from sparse demonstrations and progressively expands its behavioral repertoire, enabling the learning of a goal-conditioned policy that automatically explores the goal space with minimal expert supervision. Our approach combines diffusion-based trajectory generation with reinforcement learning, where the latter is used to track goal-conditioned trajectories produced by the diffusion model for a range of loco-manipulation skills. Through extensive ablation studies and comparisons with state-of-the-art methods, we demonstrate the effectiveness of our framework on multiple humanoid loco-manipulation skills.</p>
+  </section>
+
+  <section class="wrap" id="video">
+    <h2>Video</h2>
+    <div class="video-embed">
+      <iframe src="https://www.youtube-nocookie.com/embed/ORAL3zjS2O0" title="Humanoid-DART summary video" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </section>
+
+  <section class="wrap" id="method">
+    <h2>Method</h2>
+    <figure>
+      <img src="assets/overview.jpg" alt="Overview of the Humanoid-DART pipeline: policy learning, curriculum, motion generation, physics rollout, goal relabelling and fitness evaluation around an elite set" loading="lazy">
+    </figure>
+    <div class="cols">
+      <div><h3>Generate</h3><p>A dual-branch diffusion transformer produces robot <em>and</em> object reference trajectories for a commanded goal. A global stream handles root and object motion, a local stream handles body pose, and structured partial unmasking teaches the two to stay consistent.</p></div>
+      <div><h3>Validate</h3><p>An RL whole-body tracker executes each reference in simulation and acts as a dynamic filter. A physics-based fitness (tracking, contact and object terms) keeps only rollouts that are feasible and complete the task.</p></div>
+      <div><h3>Relabel &amp; expand</h3><p>Kept rollouts are stored under the goal they <em>achieved</em>, not the one commanded. A frontier curriculum samples the next goals just beyond the current elite set, and both models are fine-tuned on the growing archive.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="results">
+    <h2>Results</h2>
+
+    <h3>Task-space coverage grows with every generation</h3>
+    <figure>
+      <img src="assets/coverage.jpg" alt="Five panels showing pick-and-place goal bins filling from 4 seed bins to near-complete coverage over the pipeline" loading="lazy">
+      <figcaption>Pick-and-place: goal bins coloured by discovery order (purple early, yellow late); green stars are the seed demonstrations.</figcaption>
+    </figure>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Final task-space coverage (%), from 2&ndash;4 seed demonstrations per task.</caption>
+        <thead><tr><th>Method</th><th>Push</th><th>Kick</th><th>Hand-off</th><th>Pick &amp; place</th></tr></thead>
+        <tbody>
+          <tr class="ours"><td>Humanoid-DART</td><td>61.1</td><td>54.8</td><td>51.5</td><td>96.6</td></tr>
+          <tr><td>Parameterised Motion</td><td>3.9</td><td>23.9</td><td>24.4</td><td>5.7</td></tr>
+          <tr><td>Hierarchical Diffusion + RL (no loop)</td><td>2.2</td><td>2.6</td><td>32.0</td><td>6.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>A family of skills from a handful of seeds</h3>
+    <figure>
+      <img src="assets/skills.jpg" alt="Overlaid simulated humanoids carrying a box to many different goals; seed trajectories in green" loading="lazy">
+      <figcaption>Green motions are the seed trajectories; all others were generated and physically validated by the pipeline, reaching goals four to five times farther than any seed.</figcaption>
+    </figure>
+
+    <h3>Elite trajectories in simulation</h3>
+    <div class="clips">
+      <figure><video src="assets/clip_pick_place.mp4" muted loop playsinline controls preload="metadata"></video><figcaption>Pick-and-place</figcaption></figure>
+      <figure><video src="assets/clip_kick.mp4" muted loop playsinline controls preload="metadata"></video><figcaption>Kick</figcaption></figure>
+      <figure><video src="assets/clip_push.mp4" muted loop playsinline controls preload="metadata"></video><figcaption>Push</figcaption></figure>
+    </div>
+
+    <h3>What makes it work</h3>
+    <figure>
+      <img src="assets/ablations.jpg" alt="Left and centre: frontier sampling discovers more new bins per iteration than uniform sampling. Right: goal relabeling gives the lowest commanded-to-achieved error" loading="lazy">
+      <figcaption>Frontier goal sampling fills 28&ndash;74% more new bins per iteration than uniform sampling (left, centre). Relabeling by the achieved goal gives the best-conditioned generator (right).</figcaption>
+    </figure>
+    <div class="pair">
+      <figure>
+        <img src="assets/cross_attention.jpg" alt="Cross-attention heatmaps with and without structured partial unmasking" loading="lazy">
+        <figcaption>Structured partial unmasking makes body-pose tokens attend to the object pose.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/obstacle.jpg" alt="Robot root paths curving around an obstacle towards the goal region" loading="lazy">
+        <figcaption>Beyond planar goals: adding object mass (3-D) or an obstacle position (4-D) to the task space reaches 85.8% and 90.5% coverage.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="wrap narrow" id="bibtex">
+    <h2>BibTeX</h2>
+    <div class="bib">
+      <button id="copy-bib" type="button">Copy</button>
+<pre><code id="bib-text">@article{thiagarajan2026humanoiddart,
+  title   = {Humanoid-DART: Humanoid Loco-Manipulation using Diffusion-guided
+             Augmentation through Relabeling and Tracking},
+  author  = {Thiagarajan, Kanish and Debbad, Pranav and Dh{\'e}din, Victor and
+             Omar, Shafeef and Khadiv, Majid},
+  journal = {IEEE Robotics and Automation Letters},
+  year    = {2026}
+}</code></pre>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap narrow">
+    <p>ATARI Lab, MIRMI, Technical University of Munich. <a href="https://github.com/pran-d/Humanoid-DART/tree/main/docs">Page source on GitHub</a>; feel free to reuse the layout.</p>
+  </div>
+</footer>
+
+
+<script>
+// Copy-BibTeX button.
+const btn = document.getElementById('copy-bib');
+if (btn) btn.addEventListener('click', async () => {
+  const text = document.getElementById('bib-text').textContent;
+  try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
+  catch { btn.textContent = 'Select and copy manually'; }
+  setTimeout(() => (btn.textContent = 'Copy'), 1800);
+});
+// Play clips only while they are on screen.
+const vids = document.querySelectorAll('.clips video');
+if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause()), { threshold: 0.4 });
+  vids.forEach(v => io.observe(v));
+}
+
+</script>
+
+</body>
+</html>
