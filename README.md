@@ -6,7 +6,7 @@
 
 *IEEE Robotics and Automation Letters (RA-L), 2026*
 
-[📄 Paper](https://arxiv.org/abs/2606.26855) · [🌐 Project Page](https://pran-d.github.io/Humanoid-DART/) · [🎥 Video](https://www.youtube.com/watch?v=ORAL3zjS2O0)
+[📄 Paper](https://arxiv.org/abs/2606.26855) · [🌐 Project Page](https://pran-d.github.io/Humanoid-DART/) · [💻 Code](https://github.com/Atarilab/humanoid-dart) · [🎥 Video](https://www.youtube.com/watch?v=ORAL3zjS2O0)
 
 </div>
 
